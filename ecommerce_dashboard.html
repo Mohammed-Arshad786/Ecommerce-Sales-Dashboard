@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>E-commerce Sales Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f3f5f9;--card:#fff;--ink:#14213d;--mute:#6b7690;--line:#e3e8f0;--a1:#0e9f8e;--a2:#3b5bdb;--a3:#f2a541;--bad:#e5484d;--good:#12a150;--shadow:0 1px 2px rgba(20,33,61,.06);--hov:0 10px 28px rgba(20,33,61,.14);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1524;--card:#18213a;--ink:#eef1f8;--mute:#9aa6c0;--line:#27324f;--a1:#2fd0bb;--a2:#7b96ff;--a3:#ffbd5c;--bad:#ff6b70;--good:#3ddc84;--shadow:none;--hov:0 10px 28px rgba(0,0,0,.45);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1524;--card:#18213a;--ink:#eef1f8;--mute:#9aa6c0;--line:#27324f;--a1:#2fd0bb;--a2:#7b96ff;--a3:#ffbd5c;--bad:#ff6b70;--good:#3ddc84;--shadow:none;--hov:0 10px 28px rgba(0,0,0,.45);color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.45}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 20px 40px}
+header{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between;margin-bottom:22px}
+h1{font-size:clamp(1.4rem,2.6vw,2rem);margin:0;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--mute);font-size:.9rem;margin-top:2px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px;gap:2px;flex-wrap:wrap}
+.seg button{font:inherit;font-size:.85rem;font-weight:700;color:var(--mute);background:none;border:0;border-radius:9px;padding:7px 14px;cursor:pointer;transition:background .15s,color .15s}
+.seg button:hover{color:var(--ink);background:var(--bg)}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--card)}
+.seg button:focus-visible{outline:2px solid var(--a2);outline-offset:1px}
+.grid{display:grid;gap:16px}
+.kpis{grid-template-columns:repeat(3,1fr);margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow);transition:transform .18s,box-shadow .18s}
+.card:hover{transform:translateY(-3px);box-shadow:var(--hov)}
+.kpi{position:relative;overflow:hidden}
+.kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+.kpi .lab{color:var(--mute);font-size:.85rem;font-weight:700}
+.kpi .val{font-size:clamp(1.8rem,3.4vw,2.6rem);font-weight:800;letter-spacing:-.03em;margin:4px 0}
+.kpi .note{font-size:.82rem;color:var(--mute)}
+.chip{display:inline-block;font-weight:800;font-size:.8rem;padding:2px 8px;border-radius:99px;margin-right:6px}
+.up{color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.down{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.row2{grid-template-columns:repeat(12,1fr)}
+.s12{grid-column:span 12}.s7{grid-column:span 7}.s5{grid-column:span 5}.s6{grid-column:span 6}
+.card h2{font-size:1rem;margin:0 0 2px;font-weight:800}
+.card p.d{margin:0 0 12px;color:var(--mute);font-size:.82rem}
+.box{position:relative;height:300px}.box.tall{height:340px}
+footer{margin-top:20px;color:var(--mute);font-size:.8rem}
+@media(max-width:900px){.kpis{grid-template-columns:1fr}.s7,.s5,.s6{grid-column:span 12}}
+@media(prefers-reduced-motion:reduce){.card{transition:none}.card:hover{transform:none}}
+</style></head>
+<body><div class="wrap">
+<header><div><h1>E-commerce sales dashboard</h1><div class="sub" id="range"></div></div>
+<div class="seg" role="group" aria-label="Region filter" id="seg"></div></header>
+
+<section class="grid kpis" aria-label="Key metrics">
+<div class="card kpi" style="--c:var(--a1)"><div class="lab">Total revenue</div><div class="val" id="k1"></div><div class="note" id="n1"></div></div>
+<div class="card kpi" style="--c:var(--a2)"><div class="lab">Average order value</div><div class="val" id="k2"></div><div class="note" id="n2"></div></div>
+<div class="card kpi" style="--c:var(--a3)"><div class="lab">Cancellation + return rate</div><div class="val" id="k3"></div><div class="note" id="n3"></div></div>
+</section>
+
+<section class="grid row2">
+<div class="card s12"><h2>Monthly revenue</h2><p class="d">Hover to see revenue and order count. The last month is partial (data ends 16 Sep 2025).</p><div class="box"><canvas id="c1"></canvas></div></div>
+<div class="card s7"><h2>Revenue by category</h2><p class="d">Electronics drives the majority of sales.</p><div class="box tall"><canvas id="c2"></canvas></div></div>
+<div class="card s5"><h2>Orders by status</h2><p class="d">Share of orders at each fulfilment stage.</p><div class="box tall"><canvas id="c3"></canvas></div></div>
+<div class="card s6"><h2>Top states by revenue</h2><p class="d">Top 10 states in the selected region.</p><div class="box tall"><canvas id="c4"></canvas></div></div>
+<div class="card s6"><h2>Revenue by payment method</h2><p class="d">Columns show revenue; hover for order count.</p><div class="box tall"><canvas id="c5"></canvas></div></div>
+</section>
+<footer>YoY compares the last 12 full months (Sep 2024 – Aug 2025) with the 12 before. Amounts in ₹.</footer>
+</div>
+<script>
+const D={"All":{"kpi":{"rev":154704963,"orders":30000,"aov":5157,"leak":4.85,"revY":-4.0,"aovY":-3.2,"leakD":0.63,"canc":859,"ret":596},"mo":{"l":["Jan 2023","Feb 2023","Mar 2023","Apr 2023","May 2023","Jun 2023","Jul 2023","Aug 2023","Sep 2023","Oct 2023","Nov 2023","Dec 2023","Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024","Jun 2024","Jul 2024","Aug 2024","Sep 2024","Oct 2024","Nov 2024","Dec 2024","Jan 2025","Feb 2025","Mar 2025","Apr 2025","May 2025","Jun 2025","Jul 2025","Aug 2025","Sep 2025"],"rev":[4811070,3838005,4540849,4953079,4549422,4508229,4923244,4687345,4433426,4868505,4391451,4802484,5364305,4297836,5039347,5267460,4944555,5630714,5089821,4736217,4839328,4491052,4769982,4656479,4807346,4521648,4566979,4636855,4489602,4464890,5488848,4765534,2529054],"n":[945,821,941,927,922,932,919,940,882,965,888,967,970,862,926,925,916,964,963,912,946,931,945,920,933,861,897,863,947,896,974,932,468]},"cat":{"l":["Stationery","Grocery","Books","Beauty","Clothing","Sports","Home & Kitchen","Electronics"],"v":[1866207,3724052,4144889,4886564,8661035,14763238,31310430,85348549]},"st":{"l":["Delhi","Karnataka","Maharashtra","Rajasthan","Bihar","Kerala","Tamil Nadu","Gujarat","Uttar Pradesh","West Bengal"],"v":[14849624,14921515,15303466,15363458,15459758,15644477,15654761,15700293,15836328,15971282]},"so":{"l":["Delivered","Shipped","Processing","Cancelled","Returned"],"v":[17973,6091,4481,859,596]},"pay":{"l":["Net Banking","Cash on Delivery","UPI","Credit Card","Wallet","Debit Card"],"v":[26937222,26451104,25815199,25389011,25348170,24764258],"n":[5013,4997,5033,4981,4951,5025]}},"North":{"kpi":{"rev":46049409,"orders":8925,"aov":5160,"leak":4.86,"revY":-3.5,"aovY":-0.4,"leakD":0.19,"canc":259,"ret":175},"mo":{"l":["Jan 2023","Feb 2023","Mar 2023","Apr 2023","May 2023","Jun 2023","Jul 2023","Aug 2023","Sep 2023","Oct 2023","Nov 2023","Dec 2023","Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024","Jun 2024","Jul 2024","Aug 2024","Sep 2024","Oct 2024","Nov 2024","Dec 2024","Jan 2025","Feb 2025","Mar 2025","Apr 2025","May 2025","Jun 2025","Jul 2025","Aug 2025","Sep 2025"],"rev":[1462092,1046077,1524940,1375579,1635508,1288454,1179744,1389891,1126213,1525935,1253907,1353989,1425405,1447866,1615768,1569036,1199570,1840774,1627558,1474853,1216561,1380682,1338937,1390447,1506980,1280876,1697019,1322901,1178446,1412023,1580310,1536722,844345],"n":[295,275,265,262,283,275,264,298,249,300,241,303,273,249,294,291,262,302,286,287,260,279,257,272,300,239,266,255,273,268,279,283,140]},"cat":{"l":["Stationery","Grocery","Books","Beauty","Clothing","Sports","Home & Kitchen","Electronics"],"v":[572295,1112284,1231164,1398833,2635662,4386589,8903680,25808903]},"st":{"l":["Delhi","Rajasthan","Uttar Pradesh"],"v":[14849624,15363458,15836328]},"so":{"l":["Delivered","Shipped","Processing","Cancelled","Returned"],"v":[5336,1868,1287,259,175]},"pay":{"l":["Cash on Delivery","UPI","Net Banking","Credit Card","Debit Card","Wallet"],"v":[8096650,8087575,7888342,7562183,7325062,7089596],"n":[1525,1485,1472,1521,1488,1434]}},"South":{"kpi":{"rev":46220754,"orders":9116,"aov":5070,"leak":4.88,"revY":-3.8,"aovY":-0.3,"leakD":0.77,"canc":262,"ret":183},"mo":{"l":["Jan 2023","Feb 2023","Mar 2023","Apr 2023","May 2023","Jun 2023","Jul 2023","Aug 2023","Sep 2023","Oct 2023","Nov 2023","Dec 2023","Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024","Jun 2024","Jul 2024","Aug 2024","Sep 2024","Oct 2024","Nov 2024","Dec 2024","Jan 2025","Feb 2025","Mar 2025","Apr 2025","May 2025","Jun 2025","Jul 2025","Aug 2025","Sep 2025"],"rev":[1504321,1239736,1105120,1414368,1058606,1508111,1469504,1488892,1429539,1201270,1226680,1450132,1835473,1246092,1549653,1539813,1555706,1623761,1508941,1461696,1600058,1331336,1396236,1374725,1527158,1571780,1143947,1688560,1367789,1163604,1700463,1092237,845449],"n":[297,237,301,289,267,304,273,260,291,263,288,298,317,258,282,272,282,306,308,265,268,261,283,274,272,253,294,278,288,268,293,278,148]},"cat":{"l":["Stationery","Grocery","Books","Beauty","Clothing","Sports","Home & Kitchen","Electronics"],"v":[569154,1111337,1346798,1506893,2690172,4417228,9451617,25127554]},"st":{"l":["Karnataka","Kerala","Tamil Nadu"],"v":[14921515,15644477,15654761]},"so":{"l":["Delivered","Shipped","Processing","Cancelled","Returned"],"v":[5486,1841,1344,262,183]},"pay":{"l":["Net Banking","Cash on Delivery","Credit Card","UPI","Wallet","Debit Card"],"v":[8292023,8275252,7616456,7438489,7406106,7192428],"n":[1556,1477,1534,1535,1516,1498]}},"East":{"kpi":{"rev":31431040,"orders":6011,"aov":5229,"leak":4.82,"revY":-4.4,"aovY":-7.6,"leakD":1.05,"canc":167,"ret":123},"mo":{"l":["Jan 2023","Feb 2023","Mar 2023","Apr 2023","May 2023","Jun 2023","Jul 2023","Aug 2023","Sep 2023","Oct 2023","Nov 2023","Dec 2023","Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024","Jun 2024","Jul 2024","Aug 2024","Sep 2024","Oct 2024","Nov 2024","Dec 2024","Jan 2025","Feb 2025","Mar 2025","Apr 2025","May 2025","Jun 2025","Jul 2025","Aug 2025","Sep 2025"],"rev":[867178,954548,989989,1085369,875527,880794,1361849,891731,996619,1163967,896456,1005530,1158096,883493,876370,853729,1055115,1142694,776928,978227,1088885,901128,1110524,894691,824457,710000,903718,717210,1001485,954265,1006772,1153174,470523],"n":[167,175,188,195,191,178,191,178,183,196,179,182,193,189,182,176,182,186,175,169,210,193,207,189,170,177,174,165,215,171,200,196,89]},"cat":{"l":["Stationery","Grocery","Books","Beauty","Clothing","Sports","Home & Kitchen","Electronics"],"v":[362433,762773,846060,968056,1687097,2900278,6602375,17301970]},"st":{"l":["Bihar","West Bengal"],"v":[15459758,15971282]},"so":{"l":["Delivered","Shipped","Processing","Cancelled","Returned"],"v":[3617,1185,919,167,123]},"pay":{"l":["Wallet","Net Banking","Credit Card","Debit Card","UPI","Cash on Delivery"],"v":[5554163,5296552,5238218,5151911,5135076,5055122],"n":[1008,986,944,1051,1023,999]}},"West":{"kpi":{"rev":31003760,"orders":5948,"aov":5212,"leak":4.81,"revY":-4.6,"aovY":-7.0,"leakD":0.65,"canc":171,"ret":115},"mo":{"l":["Jan 2023","Feb 2023","Mar 2023","Apr 2023","May 2023","Jun 2023","Jul 2023","Aug 2023","Sep 2023","Oct 2023","Nov 2023","Dec 2023","Jan 2024","Feb 2024","Mar 2024","Apr 2024","May 2024","Jun 2024","Jul 2024","Aug 2024","Sep 2024","Oct 2024","Nov 2024","Dec 2024","Jan 2025","Feb 2025","Mar 2025","Apr 2025","May 2025","Jun 2025","Jul 2025","Aug 2025","Sep 2025"],"rev":[977479,597644,920800,1077763,979781,830870,912148,916831,881055,977333,1014408,992833,945332,720385,997557,1304881,1134165,1023486,1176393,821441,933824,877906,924285,996615,948751,958991,822295,908184,941882,934998,1201304,983401,368737],"n":[186,134,187,181,181,175,191,204,159,206,180,184,187,166,168,186,190,170,194,191,208,198,198,185,191,192,163,165,171,189,202,175,91]},"cat":{"l":["Stationery","Books","Grocery","Beauty","Clothing","Sports","Home & Kitchen","Electronics"],"v":[362325,720867,737659,1012782,1648103,3059143,6352758,17110122]},"st":{"l":["Maharashtra","Gujarat"],"v":[15303466,15700293]},"so":{"l":["Delivered","Shipped","Processing","Cancelled","Returned"],"v":[3534,1197,931,171,115]},"pay":{"l":["Net Banking","Wallet","UPI","Debit Card","Cash on Delivery","Credit Card"],"v":[5460305,5298304,5154059,5094858,5024080,4972155],"n":[999,993,990,988,996,982]}},"_range":"01 Jan 2023 \u2013 16 Sep 2025"};
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const inr=v=>'₹'+Math.round(v).toLocaleString('en-IN');
+const short=v=>v>=1e7?'₹'+(v/1e7).toFixed(2)+' Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+' L':v>=1e3?'₹'+(v/1e3).toFixed(0)+'K':'₹'+v;
+const pct=(v,t)=>(v/t*100).toFixed(1)+'%';
+let region='All',charts={};
+const regions=['All','North','South','East','West'];
+const seg=document.getElementById('seg');
+regions.forEach(r=>{const b=document.createElement('button');b.textContent=r==='All'?'All regions':r;b.onclick=()=>{region=r;render()};b.dataset.r=r;seg.appendChild(b)});
+document.getElementById('range').textContent='30,000 orders · '+D._range;
+const chip=(v,inv,suf='%')=>{const good=inv?v<=0:v>=0;return `<span class="chip ${good?'up':'down'}">${v>=0?'▲':'▼'} ${Math.abs(v)}${suf}</span>`};
+function render(){
+  const d=D[region],k=d.kpi;
+  seg.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===region));
+  k1.textContent=short(k.rev);n1.innerHTML=chip(k.revY)+'vs previous 12 months · '+k.orders.toLocaleString('en-IN')+' orders';
+  k2.textContent=inr(k.aov);n2.innerHTML=chip(k.aovY)+'vs previous 12 months';
+  k3.textContent=k.leak+'%';n3.innerHTML=chip(k.leakD,true,' pp')+k.canc+' cancelled · '+k.ret+' returned';
+  const ink=css('--ink'),mute=css('--mute'),line=css('--line'),a1=css('--a1'),a2=css('--a2'),a3=css('--a3'),card=css('--card');
+  Chart.defaults.font.family='Manrope,system-ui,sans-serif';Chart.defaults.color=mute;
+  const tip={backgroundColor:ink,titleColor:card,bodyColor:card,padding:10,cornerRadius:8,displayColors:false,titleFont:{weight:'800'}};
+  const grid={color:line},ax={grid:{display:false},border:{display:false}};
+  const mk=(id,cfg)=>{charts[id]&&charts[id].destroy();charts[id]=new Chart(document.getElementById(id),cfg)};
+  const last=d.mo.l.length-1;
+  mk('c1',{type:'line',data:{labels:d.mo.l,datasets:[{data:d.mo.rev,borderColor:a1,backgroundColor:a1+'22',fill:true,tension:.35,borderWidth:2.5,pointRadius:0,pointHoverRadius:6,pointHoverBackgroundColor:a1,pointHoverBorderColor:card,pointHoverBorderWidth:2,segment:{borderDash:c=>c.p1DataIndex===last?[5,4]:undefined}}]},
+   options:{maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:c=>'Revenue: '+inr(c.parsed.y),afterLabel:c=>'Orders: '+d.mo.n[c.dataIndex].toLocaleString('en-IN')+(c.dataIndex===last?' (partial month)':'')}}},
+   scales:{x:{...ax,ticks:{maxTicksLimit:9,maxRotation:0}},y:{grid,border:{display:false},ticks:{callback:short}}}}});
+  const hi=(arr,col)=>arr.map(()=>col);
+  mk('c2',{type:'bar',data:{labels:d.cat.l,datasets:[{data:d.cat.v,backgroundColor:d.cat.v.map((v,i)=>i===d.cat.v.length-1?a2:a2+'88'),hoverBackgroundColor:a2,borderRadius:6}]},
+   options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:c=>inr(c.parsed.x),afterLabel:c=>pct(c.parsed.x,k.rev)+' of revenue'}}},scales:{x:{grid,border:{display:false},ticks:{callback:short}},y:ax}}});
+  const sc=['#0e9f8e','#3b5bdb','#f2a541','#e5484d','#8b5cf6'],tot=d.so.v.reduce((a,b)=>a+b,0);
+  mk('c3',{type:'doughnut',data:{labels:d.so.l,datasets:[{data:d.so.v,backgroundColor:sc,borderColor:card,borderWidth:3,hoverOffset:12}]},
+   options:{maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8}},tooltip:{...tip,callbacks:{label:c=>c.label+': '+c.parsed.toLocaleString('en-IN')+' orders',afterLabel:c=>pct(c.parsed,tot)+' of orders'}}}}});
+  mk('c4',{type:'bar',data:{labels:d.st.l,datasets:[{data:d.st.v,backgroundColor:a1+'99',hoverBackgroundColor:a1,borderRadius:6}]},
+   options:{indexAxis:'y',maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:c=>inr(c.parsed.x),afterLabel:c=>pct(c.parsed.x,k.rev)+' of revenue'}}},scales:{x:{grid,border:{display:false},ticks:{callback:short,maxTicksLimit:6}},y:ax}}});
+  mk('c5',{type:'bar',data:{labels:d.pay.l,datasets:[{data:d.pay.v,backgroundColor:a3+'aa',hoverBackgroundColor:a3,borderRadius:6}]},
+   options:{maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...tip,callbacks:{label:c=>inr(c.parsed.y),afterLabel:c=>d.pay.n[c.dataIndex].toLocaleString('en-IN')+' orders · '+pct(c.parsed.y,k.rev)}}},scales:{x:{...ax,ticks:{maxRotation:0,autoSkip:false,font:{size:11}}},y:{grid,border:{display:false},ticks:{callback:short},beginAtZero:true}}}});
+}
+render();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+</script></body></html>
