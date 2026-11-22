@@ -86,8 +86,8 @@ A ready-made file is included in this repository: `sample-data.json`. Download i
 ⚠️ Update the field names above to match the ones your index.html actually reads. A small sample-data.json is included so you can try the dashboard right away.
 
 🔗 Project Links
-Live Dashboard: https://mohammed-arshad786.github.io/Ecommerce-Sales-Dashboard/
-GitHub Repository: https://github.com/Mohammed-Arshad786/Ecommerce-Sales-Dashboard     
+- Live Dashboard: https://mohammed-arshad786.github.io/Ecommerce-Sales-Dashboard/
+- GitHub Repository: https://github.com/Mohammed-Arshad786/Ecommerce-Sales-Dashboard     
          
 
 <img width="1800" height="1080" alt="sales_dashboard" src="https://github.com/user-attachments/assets/d4cc1cae-9001-418b-88e1-6ef4ed1a664f" />
@@ -98,5 +98,6 @@ GitHub Repository: https://github.com/Mohammed-Arshad786/Ecommerce-Sales-Dashboa
 
 
 I'm continuing to learn and improve my programming skills through practical projects.
+
 
 #StudentProject #AIAssistedDevelopment #DataVisualization #JavaScript #WebDevelopment #LearningJourney
